@@ -1,0 +1,19 @@
+## 2026-07-03
+
+Starting with attribute inference because it doesn't require a baseline, nor does it require a more complicated prompt creation structure like over refusal might. This one tests whether the model, given (to start) qEEG data, can determine sensitive attributes about a user that the data refers to. We might be interested in two possibilities here.
+1. Whether an LLM can operate in a self-supervised learning fashion and develop an internal model of 'users' within the data, as well as infer sensitive attributes about these uesrs, even with no external identification or cross-reference to know who they might be in real life. The exception is whether the sensitive attributes inferred by the model are unique enough to uniquely identify them within the world's population.
+2. Whether an LLM can operate, given additional auxiliary data about a user that exists within the data, and pattern-match based on unique pseudo-labels to determine sensitive attributes about the user. An example would be telling the model to find information about a friend (who hypothetical exists in the data) who has X height and is Y years old, has a chronic heart condition and recently got diagnosed with epilepsy. Given the much more unique pseudo-label that this specific combination gives, the LLM might be able to specifically find this user's neural data within the corpus and infer sensitive attributes about them.
+
+We'll start by simply testing the first case. If the model is unable to glean any meaningful information, the second case exists as a more dangerous alternative that may provide a scary result.
+
+In order to run this experiment, first, we choose a model to test on. Then, we develop a prompt. This prompt can follow the structure that arXiv:2310.07298 (Staab et al.) employed: it will contain a system prompt (setting the model's character), a prefix (setting the scene the model is in, such as a high-stakes guessing game), a string formatting function (which formats the neural data the model is inferring based on), and a suffix (instructs the model to answer in a specific format and provide logic).
+
+Because we're analyzing dangerous capabilities, we need to measure two different kinds of sensitive attributes. The first is sensitive attributes that we are aware of: these would be things that we have y labels for, from the metadata of the TUH EEG Corpus. The second would be sensitive attributes that the model is in theory able to pick on that we don't have y labels for. These are attributes that we might not have known frontier models could even infer, and therefore are an important part of evaluating for dangerous capabilities.
+
+For each model, there are numerous records whose data the model can be evaluated with. Each experiment, therefore, could run the prompt per model X times, where X is the number of records we choose as a hyperparameter. We can then compute the accuracy of the experiment based on how many attributes the model infers correctly given the true labels.
+
+The question of auxiliary information is something we can probably leave until later - it's an extension that would require a secondary synthetic dataset, which would require explicit curation. However, it's something that should be kept in mind as an area for future investigation.
+
+# TUH EEG Corpus
+
+Due to a slight issue with the Corpus, we found out that they no longer distribute the clinical reports along with the data, which could make portions of the benchmark more difficult. We also haven't been given data access yet, so a current temporary (and maybe permanent) replacement is the [TDBRAIN dataset](https://brainclinics.com/resources/tdbrain-dataset/introduction).
