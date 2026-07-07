@@ -21,6 +21,9 @@ A completeness criteria was then defined using the following columns: formal_sta
 
 Using this criteria left 375 rows. 30 rows contain a nrSessions value greater than 1, meaning the same patient came for multiple sessions. This provides more neural data for the LLM to track, and also acts as a small subset to examine what a more knowledgeable adversary might be able to do given a frontier LLM, who might have access to progressively more data rather than the default case of a single session's neural data.
 
+However, as we worked through the code more, we realized that developing the first prototype with potentially duplicated sessions would end up being much more painful than we thought, because each subject would therefore have multiple sets of target labels. Therefore, we're keeping this aside as a future extension to pursue after we have a working prototype.
+
+
 ## 2026-07-03
 
 Starting with attribute inference because it doesn't require a baseline, nor does it require a more complicated prompt creation structure like over refusal might. This one tests whether the model, given (to start) qEEG data, can determine sensitive attributes about a user that the data refers to. We might be interested in two possibilities here.
