@@ -1,3 +1,7 @@
+## 2026-07-07
+
+There is significant pre-processing tools that TDBRAIN gives code for. These would clean up the signals, reduce noise, and otherwise increase accuracy. This is something we do want to invest into in the future, however, for a first prototype, isn't a necessary part of the process. This is because although it might reduce accuracy, there is still enough signal for an LLM to theoretically be able to infer sensitive attributes; we don't want to have this experiment necessarily a measure of how good our pre-processing pipeline is, we want it to measure some meaningful signal of LLM accuracy that can then be improved upon with more preprocessing in future experiments.
+
 ## 2026-07-06
 
 We've loaded in the data from TDBRAIN V3.1. The data consists of a spreadsheet with participant information, and then numerous folders organized by subject (participant), who each contain session folders, which contain their EEG data. 
