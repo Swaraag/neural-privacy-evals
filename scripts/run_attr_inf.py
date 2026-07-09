@@ -39,6 +39,7 @@ if __name__ == "__main__":
                 }])
         
         raw_response = response.choices[0].message.content
+        raw_response = raw_response.strip().removeprefix("```json").removesuffix("```").strip()
         results[subj_id] = raw_response
 
         if (count % 1) == 0:
