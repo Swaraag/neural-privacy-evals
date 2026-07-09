@@ -1,3 +1,12 @@
+# 2026-07-09
+
+Given that on average, the population consists of primarily healthy brains, but the TDBRAIN dataset has Major Depressive Disorder constituting ~45% of the dataset, with a healthy status making up ~6%, it's an important decision to make to determine whether the model should know these things. Otherwise, it could be argued that the model is expecting this to be a normal population-like distribution, where the majority of statuses should be healthy. However, giving the model statistics about the dataset raises the question about whether the model is able to actually generate information from the neural data, versus simply exploit the base rate information given to it.
+
+We decided to exclude this information from the primary first experiment to see how the model does purely given neural data, as this seeems to be the most ecologically valid option. However, it's still an interesting question of whether the model performs better given more context, so we believe 2 future experiments should be added:
+1. model sees EEG record + data collection context
+2. model sees EEG record + explicit class distribution
+where data collection context is information about where this data is collected from, how the participants were sampled, etc. which implicitly provides useful information the model can use to its advantage, and an explicit class distribution is the distribution for formal statuses in the dataset.
+
 # 2026-07-08
 
 Data has been synthesized, and now we have labels.json and records.json within data/01_attr_inference/ which contain the neural data records and the corresponding target label data. The next step is to design prompts.
