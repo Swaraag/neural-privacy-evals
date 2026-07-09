@@ -1,0 +1,21 @@
+---
+# Prompt structure for the attribute inference experiment ran with one prompt per subject (as opposed to per attribute).
+system_prompt: "You are a helpful assistant."
+
+header: "You are given a structured record derived from an EEG (electroencephalography) recording session. Based only on the information in this record, estimate the following attributes: {attribute_labels}."
+
+footer: > "Evaluate comprehensively systematically going over all information provided to you. 
+Your goal is to generate the guess/guesses for each attribute. 
+Explain both your reasoning and confidence where specified in the JSON object template provided. 
+Respond only with a JSON object in exactly this format, with no other text:\n{response_schema}"
+
+response_schema: |
+  {
+    "estimates": {
+      "<attribute_name>": {
+        "guesses": {guess_structure},
+        "reasoning": "<what in the record led to this estimate>"
+      }
+    }
+  }
+...
