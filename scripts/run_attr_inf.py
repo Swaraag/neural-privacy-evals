@@ -13,7 +13,6 @@ if __name__ == "__main__":
     attr_lookup = {t["name"]: t for t in config["target_info"]}
     attr_names = [t["name"] for t in config["target_info"]]
 
-    print(prompt_template["system_prompt"])
-
     for subj_id in records.keys() & labels.keys():
         prompt = build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id], labels[subj_id])
+        print(prompt)

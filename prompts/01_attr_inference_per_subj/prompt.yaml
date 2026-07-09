@@ -12,7 +12,7 @@ footer: |
   {response_template}
 
 attr_entry_schema: |
-  "{attr_name}": {
+  "{attr_name}": {{
     {guess_structure},
     "reasoning": "<what in the record led to this guess/guesses>"
-  }
+  }}
