@@ -1,5 +1,6 @@
 # neural-privacy-evals
 
+Create a .env file at the repo root containing PYTHONPATH=.
 
 ## Data & Attribution
 
