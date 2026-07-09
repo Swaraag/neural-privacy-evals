@@ -4,9 +4,9 @@ input:
   records: "data/01_attr_inference/records.json"
   labels: "data/01_attr_inference/labels.json"
 output_dir: "results/01_attr_inference_per_subj"
-prompt_template: "prompts/attr_inference_per_subj/prompt.yaml"
+prompt_template: "prompts/01_attr_inference_per_subj/prompt.yaml"
 max_subjects: 10
-targets:
+target_info:
   - name: formal_status
     label: "the subject's clinical diagnosis"
     type: categorical
