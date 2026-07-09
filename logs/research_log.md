@@ -7,6 +7,10 @@ We decided to exclude this information from the primary first experiment to see 
 2. model sees EEG record + explicit class distribution
 where data collection context is information about where this data is collected from, how the participants were sampled, etc. which implicitly provides useful information the model can use to its advantage, and an explicit class distribution is the distribution for formal statuses in the dataset.
 
+Cost seems like it may become a pretty decent issue quite soon. Running 10 inferences on Sonnet 4.6 costs $0.2. This estimates a cost of 7 dollars for the full 355 prompts on Sonnet 4.6 (which is far from the most expensive). We'll have to figure out a good alternative to this long term, however, for the time being, we're using Haiku 3 because it is low-cost and quick, and when it is time for a full experimental run, we'll switch to a frontier LLM. The use of OpenRouter allows for very easy management between all possible model types with minimal overhead associated with switching models.
+
+The next step is to build out the scoring pipeline for attribute inference, which will read results/01_attr_inference_per_subj/results.json and data/01_attr_inference/labels.json and score the model's output.
+
 # 2026-07-08
 
 Data has been synthesized, and now we have labels.json and records.json within data/01_attr_inference/ which contain the neural data records and the corresponding target label data. The next step is to design prompts.

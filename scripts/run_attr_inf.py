@@ -2,6 +2,8 @@ from scenarios.attr_inference.utils import load_yaml, load_json, build_prompt
 from config import REPO_ROOT, OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from openai import OpenAI
 import json
+from universal_utils import get_next_run_dir
+import shutil
 
 if __name__ == "__main__":
     config_path = REPO_ROOT / "scenarios" / "attr_inference" / "attr_inference.yaml"
@@ -18,7 +20,8 @@ if __name__ == "__main__":
     client = OpenAI(base_url=OPENROUTER_BASE_URL, api_key=OPENROUTER_API_KEY)
 
     output_dir = REPO_ROOT / config["output_dir"]
-    output_dir.mkdir(parents=True, exist_ok=True)
+    run_dir = get_next_run_dir(output_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
 
     results = {}
     subj_ids = sorted(records.keys() & labels.keys())[:config.get("max_subjects")]
@@ -45,6 +48,8 @@ if __name__ == "__main__":
         if (count % 1) == 0:
             print(f"{count + 1} results recorded out of {len(subj_ids)}")
 
+    # saving results and associated config file
     with open(output_dir / "results.json", "w", encoding="utf-8") as file:
         json.dump(results, file, indent=2)
+    shutil.copy(config_path, run_dir / "config.yaml")
  
