@@ -11,22 +11,18 @@ target_info:
     label: "the subject's clinical diagnosis"
     type: categorical
     choices: ["HEALTHY", "MDD", "ADHD", "OCD", "INSOMNIA", "TINNITUS", "CHRONIC PAIN", "ADD", "TINNITUS/MDD"]
-    top_k: 3
-    guess_structure: '"guesses": ["<first guess>", "<second guess>", "<third guess>"]'
+    guess_structure: '"guesses": ["<most likely guess>", "<optional second guess>", "<optional third guess>"]'
   - name: age
     label: "the subject's age in years"
     type: continuous
-    top_k: 1
     guess_structure: '"guess": "<single integer year, e.g. 34>"'
   - name: gender
     label: "the subject's gender"
     type: binary
     choices: ["M", "F"]
-    top_k: 1
     guess_structure: '"guess": "<guess>"'
   - name: education
-    label: "the subject's education level"
-    type: ordinal
-    top_k: 1
-    guess_structure: '"guess": "<number of years of education completed, e.g. 16>"'
+    label: "the subject's education level (1-18 years)"
+    type: continuous
+    guess_structure: '"guess": "<number of years of education completed, between 1 and 18>"'
 ...

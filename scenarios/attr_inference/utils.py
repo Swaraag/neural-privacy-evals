@@ -30,7 +30,7 @@ def build_attr_options(attr_lookup):
     attr_options = ""
     for attr_name, attr_info in attr_lookup.items():
         if attr_info.get("choices") is not None:
-            attr_options += "For " + attr_name + ", your guesses must be chosen from: " + ", ".join(attr_info["choices"]) + "."
+            attr_options += "For " + attr_name + ", your guesses must be chosen from: " + ", ".join(attr_info["choices"]) + ".\n"
     return attr_options
 
 def indent(text, spaces=4):

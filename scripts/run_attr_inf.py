@@ -38,9 +38,9 @@ if __name__ == "__main__":
                     "content": user_msg
                 }])
         
-        raw_response = response.choices[0].message.content
+        raw_response = response.choices[0].message.content or ""
         raw_response = raw_response.strip().removeprefix("```json").removesuffix("```").strip()
-        results[subj_id] = raw_response
+        results[subj_id] = json.loads(raw_response)
 
         if (count % 1) == 0:
             print(f"{count + 1} results recorded out of {len(subj_ids)}")
