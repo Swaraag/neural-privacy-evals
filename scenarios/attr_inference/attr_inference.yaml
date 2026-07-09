@@ -1,5 +1,5 @@
 ---
-model: "claude-sonnet-4-6"
+model: "anthropic/claude-sonnet-4.6"
 input:
   records: "data/01_attr_inference/records.json"
   labels: "data/01_attr_inference/labels.json"

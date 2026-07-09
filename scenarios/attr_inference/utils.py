@@ -10,24 +10,19 @@ def load_json(path):
         return json.load(file)
     
 def build_prompt(prompt_template, attr_lookup, attr_names, record, label):
-    prompt = ""
+    user_msg = ""
 
-    prompt += prompt_template["system_prompt"] 
-    prompt += "\n"
+    user_msg += prompt_template["header"].format(attr_labels=", ".join(attr_names))
+    user_msg += "\n"
 
-
-    
-    prompt += prompt_template["header"].format(attr_labels=", ".join(attr_names))
-    prompt += "\n"
-
-    prompt += record
-    prompt += "\n"
+    user_msg += record
+    user_msg += "\n"
 
     response_template = build_response_template(prompt_template["attr_entry_schema"], attr_lookup)
 
-    prompt += prompt_template["footer"].format(response_template=response_template)
+    user_msg += prompt_template["footer"].format(response_template=response_template)
 
-    return prompt
+    return (prompt_template["system_prompt"], user_msg)
 
 def indent(text, spaces=4):
     return "\n".join(" " * spaces + line for line in text.splitlines())
