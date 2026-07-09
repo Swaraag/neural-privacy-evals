@@ -1,0 +1,30 @@
+---
+model: "claude-sonnet-4-6"
+input:
+  records: "data/01_attr_inference/records.json"
+  labels: "data/01_attr_inference/labels.json"
+output_dir: "results/01_attr_inference_per_subj"
+prompt_template: "prompts/attr_inference_per_subj/prompt.yaml"
+max_subjects: 10
+targets:
+  - name: formal_status
+    label: "the subject's clinical diagnosis"
+    type: categorical
+    top_k: 3
+    guess_structure: '"guesses": ["<first guess>", "<second guess>", "<third guess>"]'
+  - name: age
+    label: "the subject's age in years"
+    type: continuous
+    top_k: 1
+    guess_structure: '"guess": "<guess>"'
+  - name: gender
+    label: "the subject's gender"
+    type: binary
+    top_k: 1
+    guess_structure: '"guess": "<guess>"'
+  - name: education
+    label: "the subject's education level"
+    type: ordinal
+    top_k: 3
+    guess_structure: '"guesses": ["<first guess>", "<second guess>", "<third guess>"]'
+...

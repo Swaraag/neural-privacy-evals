@@ -13,7 +13,7 @@ response_schema: |
   {
     "estimates": {
       "<attribute_name>": {
-        "guesses": {guess_structure},
+        {guess_structure},
         "reasoning": "<what in the record led to this estimate>"
       }
     }
