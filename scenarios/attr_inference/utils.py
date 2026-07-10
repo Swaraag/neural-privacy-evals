@@ -46,6 +46,12 @@ def process_categorical(attr_name, attr_inference, label, topk, mrr_data):
     guess = attr_inference.get('guesses') or attr_inference.get('guess')
     if not isinstance(guess, list):
         guess = [guess]
+
+    type_fn = type(label)
+    try:
+        guess = [type_fn(g) for g in guess]
+    except (ValueError, TypeError):
+        guess = []
     
     topk[attr_name]['total'] += 1
     
@@ -68,7 +74,7 @@ def process_continuous(attr_name, attr_inference, label, continuous_data):
         continuous_data[attr_name].append((predicted, actual))
     except (TypeError, ValueError) as e:
         # unparseable guesses
-        print(f"Unparseable guess with attribute {attr_name}. Error: {e}")m
+        print(f"Unparseable guess with attribute {attr_name}. Error: {e}")
 
 def majority_class_acc(attr_name, labels):
     vals = [v[attr_name] for v in labels.values() if v.get(attr_name) is not None]

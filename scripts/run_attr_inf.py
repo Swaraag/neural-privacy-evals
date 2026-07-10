@@ -25,6 +25,15 @@ if __name__ == "__main__":
     results = {}
     subj_ids = sorted(records.keys())[:config.get("max_subjects")]
 
+    meta = {
+        "model": config["model"],
+        "prompt_template": str(config["prompt_template"]),
+        "system_prompt": prompt_template["system_prompt"],
+        "header": prompt_template["header"],
+        "footer": prompt_template["footer"],
+        "max_subjects": config.get("max_subjects"),
+    }
+
     for count, subj_id in enumerate(subj_ids):
         system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id])
 
@@ -49,6 +58,6 @@ if __name__ == "__main__":
 
     # saving results and associated config file
     with open(run_dir / "results.json", "w", encoding="utf-8") as file:
-        json.dump(results, file, indent=2)
+        json.dump({"meta": meta, **results}, file, indent=2)
     shutil.copy(config_path, run_dir / "config.yaml")
  

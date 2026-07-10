@@ -27,6 +27,8 @@ if __name__ == "__main__":
     continuous_data = {name: [] for name in target_names}
 
     for subj_id, inference in results.items():
+        if subj_id == "meta":
+            continue
         if labels.get(subj_id) is None:
             print(f"Error with {subj_id}, does not exist in labels.")
             continue
@@ -76,14 +78,14 @@ if __name__ == "__main__":
             continuous_scores[name]["pearson_p"] = float(p_r)
         elif target_info[name]["type"] == "ordinal":
             rho, p_rho = spearmanr(preds_arr, actuals_arr)
-            continuous_scores[name]["spearman_rho"] = float(rho)
-            continuous_scores[name]["spearman_p"] = float(p_rho)
+            continuous_scores[name]["spearman_rho"] = float(rho) if not np.isnan(rho) else None
+            continuous_scores[name]["spearman_p"] = float(p_rho) if not np.isnan(p_rho) else None
 
     # assemble scores
     scores = {"meta": {
         "model": config["model"],
         "run_dir": str(results_dir),
-        "n_subjects": len(results),
+        "n_subjects": len(results) - 1,
     }}
 
     for name in target_names:
