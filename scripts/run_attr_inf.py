@@ -4,6 +4,7 @@ from openai import OpenAI
 import json
 from universal_utils import get_next_run_dir
 import shutil
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 if __name__ == "__main__":
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     run_dir.mkdir(parents=True, exist_ok=True)
 
     results = {}
-    subj_ids = sorted(records.keys())[:config.get("max_subjects")]
+    subj_ids = sorted(records.keys())[:config.get("max_subjects")] if config.get("max_subjects") is not None else sorted(records.keys())
 
     meta = {
         "model": config["model"],
@@ -37,6 +38,7 @@ if __name__ == "__main__":
 
     results = {}
     failed = {}
+    start_time = time.time()
     with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {
             executor.submit(run_subject, subj_id, records[subj_id], client, config, prompt_template, attr_lookup, attr_names): subj_id
@@ -47,15 +49,20 @@ if __name__ == "__main__":
             if error:
                 failed[subj_id] = error
                 print(f"{count + 1}/{len(subj_ids)} FAILED: {subj_id} — {error}")
+                with open(run_dir / "failed.json", "w") as f:
+                    json.dump(failed, f, indent=2)
             else:
                 results[subj_id] = result
                 print(f"{count + 1}/{len(subj_ids)} complete")
-
+            if (count + 1) % 20 == 0 or (count + 1) == len(subj_ids):
+                elapsed = time.time() - start_time
+                print(f"--- {count + 1}/{len(subj_ids)} done | {elapsed:.1f}s elapsed ---")
+    print(f"Run complete in {time.time() - start_time:.1f}s")
     # saving results and associated config file
     with open(run_dir / "results.json", "w", encoding="utf-8") as file:
         json.dump({"meta": meta, **results}, file, indent=2)
     shutil.copy(config_path, run_dir / "config.yaml")
- 
+    
     if failed:
         with open(run_dir / "failed.json", "w", encoding="utf-8") as f:
             json.dump(failed, f, indent=2)

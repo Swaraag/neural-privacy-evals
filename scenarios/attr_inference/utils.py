@@ -15,7 +15,8 @@ def call_api(client, config, system_prompt, user_msg):
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_msg}
-        ]
+        ],
+        timeout=60
     )
     raw = response.choices[0].message.content or ""
     return raw.strip().removeprefix("```json").removesuffix("```").strip()
