@@ -19,10 +19,10 @@ target_info:
   - name: gender
     label: "the subject's gender"
     type: binary
-    choices: ["M", "F"]
+    choices: [0, 1]
     guess_structure: '"guess": "<guess>"'
   - name: education
     label: "the subject's education level (1-18 years)"
-    type: continuous
+    type: ordinal
     guess_structure: '"guess": "<number of years of education completed, between 1 and 18>"'
 ...

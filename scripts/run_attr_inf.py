@@ -10,7 +10,6 @@ if __name__ == "__main__":
     config = load_yaml(config_path)
 
     records = load_json(config['input']['records'])
-    labels = load_json(config['input']['labels'])
 
     prompt_template = load_yaml(REPO_ROOT / config['prompt_template'])
 
@@ -24,10 +23,10 @@ if __name__ == "__main__":
     run_dir.mkdir(parents=True, exist_ok=True)
 
     results = {}
-    subj_ids = sorted(records.keys() & labels.keys())[:config.get("max_subjects")]
+    subj_ids = sorted(records.keys())[:config.get("max_subjects")]
 
     for count, subj_id in enumerate(subj_ids):
-        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id], labels[subj_id])
+        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id])
 
         response = client.chat.completions.create(
             model=config["model"],
@@ -49,7 +48,7 @@ if __name__ == "__main__":
             print(f"{count + 1} results recorded out of {len(subj_ids)}")
 
     # saving results and associated config file
-    with open(output_dir / "results.json", "w", encoding="utf-8") as file:
+    with open(run_dir / "results.json", "w", encoding="utf-8") as file:
         json.dump(results, file, indent=2)
     shutil.copy(config_path, run_dir / "config.yaml")
  

@@ -9,7 +9,7 @@ def load_json(path):
     with open(path, 'r', encoding='utf-8') as file:
         return json.load(file)
     
-def build_prompt(prompt_template, attr_lookup, attr_names, record, label):
+def build_prompt(prompt_template, attr_lookup, attr_names, record):
     user_msg = ""
 
     user_msg += prompt_template["header"].format(attr_labels=", ".join(attr_names))
@@ -41,3 +41,36 @@ def build_response_template(attr_entry_schema, attr_lookup):
     for attr_name, attr_info in attr_lookup.items():
         response_template.append(indent(attr_entry_schema.format(attr_name=attr_name, guess_structure=attr_info["guess_structure"])))
     return '{\n  "estimates": {\n' + ",\n".join(response_template) + '\n  }\n}'
+
+def process_categorical(attr_name, attr_inference, label, topk, mrr_data):
+    guess = attr_inference.get('guesses') or attr_inference.get('guess')
+    if not isinstance(guess, list):
+        guess = [guess]
+    
+    topk[attr_name]['total'] += 1
+    
+    if len(guess) > 0 and guess[0] == label:
+        topk[attr_name]['correct-1'] += 1
+    if len(guess) > 1 and label in guess[:2]:
+        topk[attr_name]['correct-2'] += 1
+    if len(guess) > 2 and label in guess[:3]:
+        topk[attr_name]['correct-3'] += 1
+    
+    # MRR: find rank of correct label in guess list
+    rank = next((i + 1 for i, g in enumerate(guess) if g == label), None)
+    mrr_data[attr_name].append(float(1 / rank if rank is not None else 0))
+
+def process_continuous(attr_name, attr_inference, label, continuous_data):
+    guess = attr_inference.get('guess')
+    try:
+        predicted = float(guess)
+        actual = float(label)
+        continuous_data[attr_name].append((predicted, actual))
+    except (TypeError, ValueError) as e:
+        # unparseable guesses
+        print(f"Unparseable guess with attribute {attr_name}. Error: {e}")m
+
+def majority_class_acc(attr_name, labels):
+    vals = [v[attr_name] for v in labels.values() if v.get(attr_name) is not None]
+    most_common = max(set(vals), key=vals.count)
+    return float(vals.count(most_common) / len(vals))
