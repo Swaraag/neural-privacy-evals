@@ -1,6 +1,34 @@
 import yaml
 import json
 
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from openai import RateLimitError
+
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    wait=wait_exponential(multiplier=1, min=2, max=60),
+    stop=stop_after_attempt(5)
+)
+def call_api(client, config, system_prompt, user_msg):
+    response = client.chat.completions.create(
+        model=config["model"],
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_msg}
+        ]
+    )
+    raw = response.choices[0].message.content or ""
+    return raw.strip().removeprefix("```json").removesuffix("```").strip()
+
+
+def run_subject(subj_id, record, client, config, prompt_template, attr_lookup, attr_names):
+    try:
+        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, record)
+        raw = call_api(client, config, system_prompt, user_msg)
+        return subj_id, json.loads(raw), None
+    except Exception as e:
+        return subj_id, None, str(e)
+
 def load_yaml(yaml_path):
     with open(yaml_path, "r") as file:
         return yaml.safe_load(file)

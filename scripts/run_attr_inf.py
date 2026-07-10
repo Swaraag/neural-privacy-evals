@@ -1,9 +1,10 @@
-from scenarios.attr_inference.utils import load_yaml, load_json, build_prompt
+from scenarios.attr_inference.utils import load_yaml, load_json, run_subject
 from config import REPO_ROOT, OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from openai import OpenAI
 import json
 from universal_utils import get_next_run_dir
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 if __name__ == "__main__":
     config_path = REPO_ROOT / "scenarios" / "attr_inference" / "attr_inference.yaml"
@@ -34,30 +35,28 @@ if __name__ == "__main__":
         "max_subjects": config.get("max_subjects"),
     }
 
-    for count, subj_id in enumerate(subj_ids):
-        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id])
-
-        response = client.chat.completions.create(
-            model=config["model"],
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": user_msg
-                }])
-        
-        raw_response = response.choices[0].message.content or ""
-        raw_response = raw_response.strip().removeprefix("```json").removesuffix("```").strip()
-        results[subj_id] = json.loads(raw_response)
-
-        if (count % 1) == 0:
-            print(f"{count + 1} results recorded out of {len(subj_ids)}")
+    results = {}
+    failed = {}
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = {
+            executor.submit(run_subject, subj_id, records[subj_id], client, config, prompt_template, attr_lookup, attr_names): subj_id
+            for subj_id in subj_ids
+        }
+        for count, future in enumerate(as_completed(futures)):
+            subj_id, result, error = future.result()
+            if error:
+                failed[subj_id] = error
+                print(f"{count + 1}/{len(subj_ids)} FAILED: {subj_id} — {error}")
+            else:
+                results[subj_id] = result
+                print(f"{count + 1}/{len(subj_ids)} complete")
 
     # saving results and associated config file
     with open(run_dir / "results.json", "w", encoding="utf-8") as file:
         json.dump({"meta": meta, **results}, file, indent=2)
     shutil.copy(config_path, run_dir / "config.yaml")
  
+    if failed:
+        with open(run_dir / "failed.json", "w", encoding="utf-8") as f:
+            json.dump(failed, f, indent=2)
+        print(f"{len(failed)} subjects failed — see failed.json")
