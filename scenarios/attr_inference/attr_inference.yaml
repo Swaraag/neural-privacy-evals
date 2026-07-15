@@ -1,4 +1,14 @@
 ---
+config_version: 1
+
+experiment:
+  formatting: "flat"            # "flat" | "markdown"
+  feature_representation: "raw" # "raw" | "relative" | "derived" | "derived_norms"
+  norms: false                  # published norms provided in prompt
+  base_rates: false             # sample base rates provided in prompt
+  shots: 0                      # number of few-shot exemplars
+  show_computation: false       # ask model to show biomarker arithmetic
+  
 model: anthropic/claude-sonnet-4.6
 input:
   records: "data/01_attr_inference/records.json"

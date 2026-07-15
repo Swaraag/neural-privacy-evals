@@ -1,4 +1,4 @@
-from scenarios.attr_inference.utils import load_yaml, load_json, run_subject
+from scenarios.attr_inference.utils import load_yaml, load_json, run_subject, build_prompt
 from config import REPO_ROOT, OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from openai import OpenAI
 import json
@@ -38,6 +38,9 @@ if __name__ == "__main__":
 
     results = {}
     failed = {}
+
+    # print(build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id[0]])[1])
+
     start_time = time.time()
     with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {

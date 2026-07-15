@@ -22,5 +22,5 @@ if __name__ == "__main__":
         row = filt_df.loc[subj_id]
         # dumping all information into labels so that the information is available to then determine at experiment time what are the target labels
         labels[subj_id] = {k: sanitize(v) for k, v in row.to_dict().items()}
-    with open(DATA_ROOT / "01_attr_inference" / "labels.json", "w", encoding="utf-8") as file:
+    with open(DATA_ROOT / "01_attr_inference_raw" / "labels.json", "w", encoding="utf-8") as file:
         json.dump(labels, file, indent=2)

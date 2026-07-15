@@ -1,4 +1,19 @@
-## 2026-07-10
+## 2026-07-14
+
+Given our lack of current funding, the best approach right now is to focus on how to optimize the experimental design rather than to run more experiments. The findings from logs/experiemnts/experiment-001-002.md explain how the model struggles to deal with the raw EEG data because the values are absolute.
+
+What might be useful now, then, is to test how the models perform given processed neural data. Here's the rationale: neural data can sometimes be hard to work with in abstract terms, because all values are heavily dependent on subject-specific factors. For instance, a subject's skull thickness, scalp conductivity, etc. cause people who may have very similar underlying neural dynamics to have wildly differing neural data, in terms of absolute power.
+
+There are a couple of potential solutions here: 
+1. Giving the model relative band power. This divides each value by the subject's own total power, which normalizes it, removing much of the skull/impedance compound that absolute band powers had. 
+2. Giving the model published population norms.
+3. Giving the model sample norms. This is likely the weakest option, because it would mean giving the model statistics about the entire dataset even though it is reviewing only an individual user's data. In the real world, this acts as a solution that might not be the most ecologically valid.
+
+In order to combat Sonnet 4.6's hedging (tendency to predict 2 or 3 guesses rather than 1 to have a higher chance of getting the answer right somewhere), we may introduce another metric, which penalizes the model for guessing more times. This means we should likely also add a sentence into the model prompt explaining this penalization.
+
+The other question is to determine whether the problem we're giving these LLMs is tractable in the first place. To figure this out, one approach is to find a ceiling on the potential for a supervised classifier/regressor to predict meaningful insights from the data. We can use this classifier/regressor approach to then test all future sets of data that we may use, compare them with one another on the same access, and provide the supervised upper bound for the capability we might expect to see from an LLM.
+
+
 
 ## 2026-07-09
 
