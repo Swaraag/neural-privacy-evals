@@ -8,11 +8,9 @@ experiment:
   base_rates: false             # sample base rates provided in prompt
   shots: 0                      # number of few-shot exemplars
   show_computation: false       # ask model to show biomarker arithmetic
-  
+
 model: anthropic/claude-sonnet-4.6
-input:
-  records: "data/01_attr_inference/records.json"
-  labels: "data/01_attr_inference/labels.json"
+data_root: "data/01_attr_inference/"
 output_dir: "results/01_attr_inference_per_subj"
 prompt_template: "prompts/01_attr_inference_per_subj/prompt.yaml"
 max_subjects: null

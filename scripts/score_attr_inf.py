@@ -1,6 +1,6 @@
 from scenarios.attr_inference.utils import load_json, load_yaml, process_categorical, process_continuous, majority_class_acc
 from config import REPO_ROOT
-from universal_utils import get_cur_run_dir
+from universal_utils import get_cur_prefix_dir
 
 # continuous
 from scipy.stats import pearsonr, spearmanr
@@ -12,9 +12,11 @@ if __name__ == "__main__":
     config_path = REPO_ROOT / "scenarios" / "attr_inference" / "attr_inference.yaml"
     config = load_yaml(config_path)
 
-    labels = load_json(config['input']['labels'])
+    data_path = get_cur_prefix_dir(config["data_root"], "version")
 
-    results_dir = get_cur_run_dir(REPO_ROOT / config["output_dir"])
+    labels = load_json(data_path / "labels.json")
+
+    results_dir = get_cur_prefix_dir(REPO_ROOT / config["output_dir"], "run")
     # alternative hard-coded results_dir below:
     # results_dir = REPO_ROOT / config["output_dir"] / "run_001"
     

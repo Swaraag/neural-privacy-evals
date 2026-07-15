@@ -2,7 +2,7 @@ from scenarios.attr_inference.utils import load_yaml, load_json, run_subject, bu
 from config import REPO_ROOT, OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from openai import OpenAI
 import json
-from universal_utils import get_next_run_dir
+from universal_utils import get_next_prefix_dir, get_cur_prefix_dir
 import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,7 +11,10 @@ if __name__ == "__main__":
     config_path = REPO_ROOT / "scenarios" / "attr_inference" / "attr_inference.yaml"
     config = load_yaml(config_path)
 
-    records = load_json(config['input']['records'])
+    # if you want a specific dir, change to: data_path = config["data_root"] / "version_00x/"
+    data_path = get_cur_prefix_dir(config["data_root"], "version")
+
+    records = load_json(data_path / "records.json")
 
     prompt_template = load_yaml(REPO_ROOT / config['prompt_template'])
 
@@ -21,7 +24,7 @@ if __name__ == "__main__":
     client = OpenAI(base_url=OPENROUTER_BASE_URL, api_key=OPENROUTER_API_KEY)
 
     output_dir = REPO_ROOT / config["output_dir"]
-    run_dir = get_next_run_dir(output_dir)
+    run_dir = get_next_prefix_dir(output_dir, "run")
     run_dir.mkdir(parents=True, exist_ok=True)
 
     subj_ids = sorted(records.keys())[:config.get("max_subjects")] if config.get("max_subjects") is not None else sorted(records.keys())
@@ -30,6 +33,7 @@ if __name__ == "__main__":
         "model": config["model"],
         "config_version": config.get("config_version"),
         "experiment": config.get("experiment", {}),
+        "data_dir": data_path,
         "config": config
     }
 
