@@ -1,5 +1,5 @@
 import json
-from utils import filter_df, generate_neural_data, populate_bdf_index, sanitize
+from utils import filter_df, generate_neural_data, generate_string_neural_data, populate_bdf_index, sanitize
 from config import DATA_ROOT, PARTICIPANTS_FILE_NAME
 import sys
 from pathlib import Path
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     output_dir = DATA_ROOT / "01_attr_inference"
     version_dir = get_next_prefix_dir(output_dir, "version")
     version_dir.mkdir(parents=True, exist_ok=True)
-    
+
     with open(version_dir / "records.json", "w", encoding="utf-8") as file:
         json.dump(neural_data, file, indent=2)
 

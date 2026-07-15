@@ -39,7 +39,11 @@ def load_json(path):
         return json.load(file)
     
 def format_spectral_table(record):
-    """FIX"""
+    """TO DO"""
+    return record
+
+def flatten(record):
+    """TO DO"""
     return record
 
 def build_prompt(prompt_template, attr_lookup, attr_names, record, config):
@@ -49,7 +53,7 @@ def build_prompt(prompt_template, attr_lookup, attr_names, record, config):
     user_msg += prompt_template["header"].format(attr_labels=", ".join(attr_names))
     user_msg += "\n"
 
-    user_msg += record if config["experiment"]["formatting"] == "flat" else format_spectral_table(record) if config["experiment"]["formatting"] == "markdown" else ""
+    user_msg += flatten(record) if config["experiment"]["formatting"] == "flat" else format_spectral_table(record) if config["experiment"]["formatting"] == "markdown" else ""
     user_msg += "\n"
 
     response_template = build_response_template(prompt_template["attr_entry_schema"], attr_lookup)

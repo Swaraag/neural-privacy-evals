@@ -12,7 +12,7 @@ if __name__ == "__main__":
     config_path = REPO_ROOT / "scenarios" / "attr_inference" / "attr_inference.yaml"
     config = load_yaml(config_path)
 
-    data_path = get_cur_prefix_dir(config["data_root"], "version")
+    data_path = get_cur_prefix_dir(REPO_ROOT / config["data_root"], "version")
 
     labels = load_json(data_path / "labels.json")
 

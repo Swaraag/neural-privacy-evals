@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 import math
 from collections import defaultdict
-
 mne.set_log_level('WARNING')
 
 def populate_bdf_index(DATA_ROOT, filt_ids):
@@ -13,6 +12,30 @@ def populate_bdf_index(DATA_ROOT, filt_ids):
         if subj_id in filt_ids and "ses-1" in path.parts:
             bdf_index[subj_id].append(path)
     return bdf_index
+
+def generate_string_neural_data(bdf_index):
+    neural_data = {}
+    for subj_index, (subj_id, bdf_paths) in enumerate(bdf_index.items()):
+        record = ""
+        for bdf_path in bdf_paths:
+            band_powers, channel_names = process_bdf(bdf_path)
+            if "restEC" in bdf_path.name:
+                record += "Eyes Closed Spectral Features (μV²/Hz):\n"
+            elif "restEO" in bdf_path.name:
+                record += "Eyes Open Spectral Features (μV²/Hz):\n"
+            else:
+                print(subj_id)
+                print(bdf_paths)
+                continue
+            for index, channel in enumerate(channel_names):
+                    record += "Channel " + channel + ": "
+                    for band, powers in band_powers.items():
+                        record += band + "=" + str(round(powers[index], 2)) + ", "
+                    record += "\n"
+        neural_data[subj_id] = record
+        if (subj_index % 20) == 0:
+            print(subj_index, "subjects processed out of", len(bdf_index))
+    return neural_data
 
 def generate_neural_data(bdf_index):
     neural_data = {}
