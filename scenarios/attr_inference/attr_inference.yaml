@@ -2,7 +2,7 @@
 config_version: 1
 
 experiment:
-  formatting: "flat"            # "flat" | "markdown"
+  formatting: "markdown"            # "flat" | "markdown"
   feature_representation: "raw" # "raw" | "relative" | "derived" | "derived_norms"
   norms: false                  # published norms provided in prompt
   base_rates: false             # sample base rates provided in prompt

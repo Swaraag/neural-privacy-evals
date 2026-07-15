@@ -4,6 +4,23 @@ import json
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from openai import RateLimitError
 
+CHANNEL_ORDER = [
+    "Fp1", "Fp2",
+    "F7", "F3", "Fz", "F4", "F8",
+    "FC3", "FCz", "FC4",
+    "T7", "C3", "Cz", "C4", "T8",
+    "CP3", "CPz", "CP4",
+    "P7", "P3", "Pz", "P4", "P8",
+    "O1", "Oz", "O2",
+]
+ 
+BANDS = ["delta", "theta", "alpha", "beta", "gamma"]
+
+CONDITION_LABELS = {
+    "EC": "Eyes Closed",
+    "EO": "Eyes Open",
+}
+
 @retry(
     retry=retry_if_exception_type(RateLimitError),
     wait=wait_exponential(multiplier=1, min=2, max=60),
@@ -39,12 +56,60 @@ def load_json(path):
         return json.load(file)
     
 def format_spectral_table(record):
-    """TO DO"""
-    return record
+    sections = []
+ 
+    for condition in ["EC", "EO"]:
+        condition_data = record.get(condition, {})
+        header = f"**{CONDITION_LABELS[condition]} Spectral Features (\u03bcV\u00b2/Hz):**"
+ 
+        col_headers = ["Channel"] + BANDS + ["Total"]
+        separator = ["---"] + ["---:"] * (len(BANDS) + 1)  # right-align numeric cols
+
+        rows = []
+        for channel in CHANNEL_ORDER:
+            if channel not in condition_data:
+                continue
+            band_data = condition_data[channel]
+            values = [band_data.get(band, 0.0) for band in BANDS]
+            total = round(sum(values), 2)
+            row = [channel] + [str(v) for v in values] + [str(total)]
+            rows.append(row)
+ 
+        def pipe_row(cells):
+            return "| " + " | ".join(cells) + " |"
+ 
+        table_lines = (
+            [header, ""]
+            + [pipe_row(col_headers)]
+            + [pipe_row(separator)]
+            + [pipe_row(row) for row in rows]
+        )
+ 
+        sections.append("\n".join(table_lines))
+ 
+    return "\n\n".join(sections)
 
 def flatten(record):
-    """TO DO"""
-    return record
+    lines = []
+ 
+    for condition in ["EC", "EO"]:
+        condition_data = record.get(condition, {})
+        lines.append(f"{CONDITION_LABELS[condition]} Spectral Features (\u03bcV\u00b2/Hz):")
+ 
+        for channel in CHANNEL_ORDER:
+            if channel not in condition_data:
+                continue
+            band_data = condition_data[channel]
+            band_str = ", ".join(
+                f"{band}={band_data[band]}"
+                for band in BANDS
+                if band in band_data
+            )
+            lines.append(f"Channel {channel}: {band_str}")
+ 
+        lines.append("")  # blank line between conditions
+ 
+    return "\n".join(lines).strip()
 
 def build_prompt(prompt_template, attr_lookup, attr_names, record, config):
     """Called by run_subject()"""
