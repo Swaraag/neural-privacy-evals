@@ -24,20 +24,26 @@ if __name__ == "__main__":
     run_dir = get_next_run_dir(output_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    results = {}
     subj_ids = sorted(records.keys())[:config.get("max_subjects")] if config.get("max_subjects") is not None else sorted(records.keys())
 
     meta = {
         "model": config["model"],
-        "prompt_template": str(config["prompt_template"]),
-        "system_prompt": prompt_template["system_prompt"],
-        "header": prompt_template["header"],
-        "footer": prompt_template["footer"],
-        "max_subjects": config.get("max_subjects"),
+        "config_version": config.get("config_version"),
+        "experiment": config.get("experiment", {}),
+        "config": config
     }
 
     results = {}
     failed = {}
+
+    # dump one realized sample prompt so the exact model-facing input under
+    # this config is recoverable later. Uses first subject id
+    sample_id = subj_ids[0]
+    _, sample_user_prompt = build_prompt(
+        prompt_template, attr_lookup, attr_names, records[sample_id], config
+    )
+    with open(run_dir / "sample_prompt.txt", "w", encoding="utf-8") as f:
+        f.write(f"# sample prompt for subject {sample_id}\n\n{sample_user_prompt}")
 
     # print(build_prompt(prompt_template, attr_lookup, attr_names, records[subj_id[0]])[1])
 

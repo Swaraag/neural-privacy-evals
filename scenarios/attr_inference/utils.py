@@ -24,7 +24,7 @@ def call_api(client, config, system_prompt, user_msg):
 
 def run_subject(subj_id, record, client, config, prompt_template, attr_lookup, attr_names):
     try:
-        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, record)
+        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, record, config)
         raw = call_api(client, config, system_prompt, user_msg)
         return subj_id, json.loads(raw), None
     except Exception as e:
@@ -38,13 +38,18 @@ def load_json(path):
     with open(path, 'r', encoding='utf-8') as file:
         return json.load(file)
     
-def build_prompt(prompt_template, attr_lookup, attr_names, record):
+def format_spectral_table(record):
+    """FIX"""
+    return record
+
+def build_prompt(prompt_template, attr_lookup, attr_names, record, config):
+    """Called by run_subject()"""
     user_msg = ""
 
     user_msg += prompt_template["header"].format(attr_labels=", ".join(attr_names))
     user_msg += "\n"
 
-    user_msg += record
+    user_msg += record if config["experiment"]["formatting"] == "flat" else format_spectral_table(record) if config["experiment"]["formatting"] == "markdown" else ""
     user_msg += "\n"
 
     response_template = build_response_template(prompt_template["attr_entry_schema"], attr_lookup)
