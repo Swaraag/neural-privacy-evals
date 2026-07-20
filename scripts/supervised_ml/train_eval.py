@@ -1,15 +1,3 @@
-"""
-scripts/supervised_ml/train_eval.py
-
-Cross-validated supervised ML evaluation pipeline.
-Establishes the supervised upper bound for each attribute, used to verify
-that signal exists in the data before interpreting LLM null results.
-
-Usage (called by run_raw.py and run_derived.py, not directly):
-    from train_eval import evaluate_all_attributes
-    results = evaluate_all_attributes(X, labels_df, condition_name, output_path)
-"""
-
 import json
 import time
 import numpy as np
@@ -19,26 +7,11 @@ from collections import Counter
 from scipy.stats import pearsonr, spearmanr
 from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.preprocessing import LabelEncoder
-from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier, XGBRegressor
 
-from utils import (
-    load_labels_df,        # () -> pd.DataFrame with columns: subject_id, formal_status, age, gender, education
-    align_subjects,        # (X_dict, labels_df) -> (X_np, labels_df_aligned) ensuring row correspondence
-)
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
 N_FOLDS = 5
 RANDOM_STATE = 42
-
-FORMAL_STATUS_CHOICES = [
-    "HEALTHY", "MDD", "ADHD", "OCD", "INSOMNIA",
-    "TINNITUS", "CHRONIC PAIN", "ADD", "TINNITUS/MDD",
-]
 
 XGBC_PARAMS = dict(
     n_estimators=300,
@@ -61,6 +34,58 @@ XGBR_PARAMS = dict(
     random_state=RANDOM_STATE,
     n_jobs=-1,
 )
+
+# ---------------------------------------------------------------------------
+# Main entry point
+# ---------------------------------------------------------------------------
+
+def evaluate_all_attributes(X, labels_df, target_info, condition_name, output_path):
+    """
+    Run cross-validated evaluation for all four attributes.
+    Returns a full results dict (also written to output_path).
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    n = len(labels_df)
+    print(f"\n{'='*60}")
+    print(f"Condition: {condition_name}")
+    print(f"Subjects: {n}  |  Features: {X.shape[1]}")
+    print(f"{'='*60}")
+
+    results = {
+        "meta": {
+            "condition": condition_name,
+            "n_subjects": n,
+            "n_features": int(X.shape[1]),
+            "n_folds": N_FOLDS,
+            "model": "XGBoost",
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        }
+    }
+
+    type_to_fn = {
+        "categorical": _cv_formal_status,
+        "binary":      _cv_gender,
+        "continuous":  _cv_age,
+        "ordinal":     _cv_education,
+    }
+
+    for attr_idx, attr in enumerate(target_info, 1):
+        attr_name = attr["name"]
+        attr_type = attr["type"]
+        cv_fn     = type_to_fn[attr_type]
+
+        print(f"\n[{attr_idx}/{len(target_info)}] {attr_name} ({attr_type})...")
+        results[attr_name] = cv_fn(X, labels_df[attr_name].values)
+        print_summary(attr_name, results[attr_name])
+
+    # Write output
+    with open(output_path, "w") as f:
+        json.dump(results, f, indent=2)
+    print(f"\nResults written to {output_path}")
+
+    return results
 
 # ---------------------------------------------------------------------------
 # Per-attribute CV routines
@@ -246,87 +271,7 @@ def _cv_education(X: np.ndarray, y: np.ndarray) -> dict:
         "y_distribution": {str(int(k)): int(v) for k, v in Counter(y.astype(int)).items()},
     }
 
-# ---------------------------------------------------------------------------
-# Main entry point
-# ---------------------------------------------------------------------------
-
-def evaluate_all_attributes(
-    X: np.ndarray,
-    subject_ids: list[str],
-    condition_name: str,
-    output_path: str | Path,
-) -> dict:
-    """
-    Run cross-validated evaluation for all four attributes.
-
-    Args:
-        X:              Feature matrix, shape (n_subjects, n_features).
-                        Row order must match subject_ids.
-        subject_ids:    List of subject ID strings corresponding to X rows.
-        condition_name: e.g. "raw_spectral" or "derived_biomarkers".
-                        Written into output meta.
-        output_path:    Where to write the results JSON.
-
-    Returns:
-        Full results dict (also written to output_path).
-    """
-    output_path = Path(output_path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Load ground truth labels and align to X row order
-    labels_df = load_labels_df()
-    X, labels_df = align_subjects(X, subject_ids, labels_df)
-
-    n = len(labels_df)
-    print(f"\n{'='*60}")
-    print(f"Condition: {condition_name}")
-    print(f"Subjects: {n}  |  Features: {X.shape[1]}")
-    print(f"{'='*60}")
-
-    results = {
-        "meta": {
-            "condition": condition_name,
-            "n_subjects": n,
-            "n_features": int(X.shape[1]),
-            "n_folds": N_FOLDS,
-            "model": "XGBoost",
-            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        }
-    }
-
-    # --- formal_status ---
-    print("\n[1/4] formal_status (multiclass classification)...")
-    y_fs = labels_df["formal_status"].values
-    results["formal_status"] = _cv_formal_status(X, y_fs)
-    _print_summary("formal_status", results["formal_status"])
-
-    # --- gender ---
-    print("\n[2/4] gender (binary classification)...")
-    y_g = labels_df["gender"].values
-    results["gender"] = _cv_gender(X, y_g)
-    _print_summary("gender", results["gender"])
-
-    # --- age ---
-    print("\n[3/4] age (continuous regression)...")
-    y_a = labels_df["age"].values
-    results["age"] = _cv_age(X, y_a)
-    _print_summary("age", results["age"])
-
-    # --- education ---
-    print("\n[4/4] education (ordinal regression)...")
-    y_e = labels_df["education"].values
-    results["education"] = _cv_education(X, y_e)
-    _print_summary("education", results["education"])
-
-    # Write output
-    with open(output_path, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"\nResults written to {output_path}")
-
-    return results
-
-
-def _print_summary(attr: str, result: dict) -> None:
+def print_summary(attr: str, result: dict) -> None:
     t = result["type"]
     baseline_key = "baseline_top1_acc" if t in ("categorical", "binary") else "baseline_mae"
     model_key = "cv_top1_acc" if t in ("categorical", "binary") else "cv_mae"

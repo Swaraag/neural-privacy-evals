@@ -100,4 +100,4 @@ def build_raw_features(data_path) -> tuple[np.ndarray, list[str]]:
     return X, subject_ids
 
 def build_derived_features(data_path):
-    pass
+    raise NotImplementedError("Derived feature pipeline not yet built.")
