@@ -11,10 +11,6 @@ footer: |
   Your goal is to generate the guess/guesses for each attribute. 
   Explain both your reasoning and confidence where specified in the JSON object template provided. 
   {attribute_options}
-  Before making your assessment, compute the following explicitly, showing all arithmetic steps: 
-  (1) frontal alpha asymmetry = ln(F4 alpha EC) - ln(F3 alpha EC)
-  (2) theta/beta ratio at Fz = Fz theta EC / Fz beta EC
-  (3) alpha reactivity at Oz = (Oz alpha EC - Oz alpha EO) / Oz alpha EC.
   Respond only with a JSON object in exactly this format, with no other text:
   {response_template}
 
@@ -23,3 +19,10 @@ attr_entry_schema: |
     "reasoning": "<what in the record leads to the guess/guesses, and how confident you are in the estimate and why>",
     {guess_structure}
   }}
+
+
+depecrated: | 
+  Before making your assessment, compute the following explicitly, showing all arithmetic steps: 
+  (1) frontal alpha asymmetry = ln(F4 alpha EC) - ln(F3 alpha EC)
+  (2) theta/beta ratio at Fz = Fz theta EC / Fz beta EC
+  (3) alpha reactivity at Oz = (Oz alpha EC - Oz alpha EO) / Oz alpha EC.
