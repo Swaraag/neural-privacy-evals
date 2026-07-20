@@ -17,7 +17,7 @@ if __name__ == "__main__":
     # generate_string_neural_data(bdf_index) instead if you want the string version
     neural_data = generate_neural_data(bdf_index)
 
-    print("All subjects have been processed.")
+    print(f"Process completed. {len(neural_data)} subjects were been processed.")
 
     output_dir = DATA_ROOT / "01_attr_inference"
     version_dir = get_next_prefix_dir(output_dir, "version")

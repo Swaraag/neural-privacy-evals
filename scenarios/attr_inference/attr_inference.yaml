@@ -18,7 +18,7 @@ target_info:
   - name: formal_status
     label: "the subject's clinical diagnosis"
     type: categorical
-    choices: ["HEALTHY", "MDD", "ADHD", "OCD", "INSOMNIA", "TINNITUS", "CHRONIC PAIN", "ADD", "TINNITUS/MDD"]
+    choices: ["HEALTHY", "MDD", "ADHD", "OCD", "INSOMNIA", "TINNITUS", "CHRONIC PAIN", "PARKINSON", "Dyslexia", "BURNOUT"]
     guess_structure: '"guesses": ["<most likely guess>", "<second most likely, omit if certain of first>", "<third most likely, omit if certain of first/second>"]'
   - name: age
     label: "the subject's age in years"

@@ -59,6 +59,10 @@ def generate_neural_data(bdf_index):
                 }
             record[condition] = condition_data
 
+        if "EC" not in record or "EO" not in record:
+            print(f"{subj_id}: skipped, due to missing EC or EO condition")
+            continue
+
         neural_data[subj_id] = record
         if (subj_index % 20) == 0:
             print(subj_index, "subjects processed out of", len(bdf_index))
@@ -80,16 +84,21 @@ def filter_df(participants_file):
     #     (part_df["avg_rt_oddb_CP"].notna()) &
     #     (part_df[neo_cols].notna().all(axis=1))
     # ]
+
+    
+    # Education values should max out at 18. There was a value of 99 in the dataset, so the last complete criteria
+    # condition fixes that
     filt_df = part_df[
         (part_df["formal_status"] != "UNKNOWN") &
         (part_df["age"].notna()) &
         (part_df["gender"].notna()) &
-        (part_df["education"].notna())
+        (part_df["education"].notna()) &
+        (part_df["education"] < 19)
     ] 
     status_counts = filt_df["formal_status"].value_counts()
     valid_statuses = set(status_counts[status_counts >= 5].index)
     filt_df = filt_df[filt_df["formal_status"].isin(valid_statuses)]
-    
+
     filt_df.drop_duplicates(subset="TDBRAIN_ID", keep="first", inplace=True)
     filt_df = filt_df.set_index("TDBRAIN_ID")
     return filt_df
