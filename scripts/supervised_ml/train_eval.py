@@ -40,10 +40,8 @@ XGBR_PARAMS = dict(
 def evaluate_all_attributes(X, labels_df, target_info, condition_name):
     """
     Run cross-validated evaluation for all four attributes.
-    Returns a full results dict (also written to output_path).
+    Returns a full results dict.
     """
-    output_path = Path(output_path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     n = len(labels_df)
     print(f"\n{'='*60}")
@@ -91,23 +89,32 @@ def _cv_formal_status(X: np.ndarray, y_raw: np.ndarray) -> dict:
     Returns per-fold arrays and aggregated results.
     """
     le = LabelEncoder()
-    y = le.fit_transform(y_raw)
-    classes = le.classes_
+    y_encoded = le.fit_transform(y_raw)
 
     skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=RANDOM_STATE)
 
     fold_accs, fold_f1s = [], []
-    oof_preds = np.empty(len(y), dtype=object)
+    oof_preds = np.empty(len(y_encoded), dtype=object)
 
-    for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+    for fold, (train_idx, val_idx) in enumerate(skf.split(X, y_encoded)):
         X_tr, X_val = X[train_idx], X[val_idx]
-        y_tr, y_val = y[train_idx], y[val_idx]
+        y_tr_raw = y_raw[train_idx]
+        y_val_raw = y_raw[val_idx]
 
-        model = XGBClassifier(num_class=len(classes), **XGBC_PARAMS)
+        fold_le = LabelEncoder()
+        y_tr = fold_le.fit_transform(y_tr_raw)
+
+        try:
+            y_val = fold_le.transform(y_val_raw)
+        except ValueError:
+            print(f"  Fold {fold+1}: skipping — validation contains unseen class")
+            continue
+
+        model = XGBClassifier(**XGBC_PARAMS)
         model.fit(X_tr, y_tr)
 
         preds = model.predict(X_val)
-        oof_preds[val_idx] = le.inverse_transform(preds)
+        oof_preds[val_idx] = fold_le.inverse_transform(preds)
 
         acc = np.mean(preds == y_val)
         fold_accs.append(acc)
@@ -117,12 +124,12 @@ def _cv_formal_status(X: np.ndarray, y_raw: np.ndarray) -> dict:
         fold_f1s.append(f1)
 
     # Naive baseline: always predict majority class
-    majority = Counter(y).most_common(1)[0][0]
-    baseline_acc = np.mean(y == majority)
+    majority = Counter(y_encoded).most_common(1)[0][0]
+    baseline_acc = np.mean(y_encoded == majority)
 
     return {
         "type": "categorical",
-        "n": len(y),
+        "n": len(y_encoded),
         "cv_top1_acc": float(np.mean(fold_accs)),
         "cv_top1_acc_std": float(np.std(fold_accs)),
         "cv_macro_f1": float(np.mean(fold_f1s)),
@@ -147,7 +154,7 @@ def _cv_gender(X: np.ndarray, y: np.ndarray) -> dict:
         X_tr, X_val = X[train_idx], X[val_idx]
         y_tr, y_val = y[train_idx], y[val_idx]
 
-        model = XGBClassifier(num_class=2, **XGBC_PARAMS)
+        model = XGBClassifier(**XGBC_PARAMS)
         model.fit(X_tr, y_tr)
 
         preds = model.predict(X_val)

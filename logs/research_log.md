@@ -1,3 +1,5 @@
+## 2026-07-20
+
 ## 2026-07-15
 
 There are lots of potential experiments to run from this point on, so I've generated a targeted list of the things we want to try going forward. Compute is still the current bottleneck, which means this list is ordered based off the changes and experimental modifications that can be made immediately versus later once more compute is attained.
