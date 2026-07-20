@@ -41,7 +41,7 @@ if __name__ == "__main__":
             attr_type = target_info[attr_name]["type"]
             label_val = label[attr_name]
             if attr_type in ("categorical", "binary"):
-                process_categorical(attr_name, attr_inference, label_val, topk, mrr_data)
+                process_categorical(attr_name, attr_inference, label_val, topk, mrr_data, target_info, subj_id)
             elif attr_type in ("continuous", "ordinal"):
                 process_continuous(attr_name, attr_inference, label_val, continuous_data)
 

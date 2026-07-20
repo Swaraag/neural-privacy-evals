@@ -145,12 +145,19 @@ def build_response_template(attr_entry_schema, attr_lookup):
         response_template.append(indent(attr_entry_schema.format(attr_name=attr_name, guess_structure=attr_info["guess_structure"])))
     return '{\n  "estimates": {\n' + ",\n".join(response_template) + '\n  }\n}'
 
-def process_categorical(attr_name, attr_inference, label, topk, mrr_data):
+def process_categorical(attr_name, attr_inference, label, topk, mrr_data, target_info, subj_id):
     guess = attr_inference.get('guesses') or attr_inference.get('guess')
     if not isinstance(guess, list):
         guess = [guess]
 
     type_fn = type(label)
+
+    if attr_name in target_info and "choices" in target_info[attr_name]:
+        valid = set(target_info[attr_name]["choices"])
+        invalid = [g for g in guess if g not in valid]
+        if invalid:
+            print(f"[INVALID GUESS] {subj_id} | {attr_name}: {invalid} (valid: {valid})")
+
     try:
         guess = [type_fn(g) for g in guess]
     except (ValueError, TypeError):

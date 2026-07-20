@@ -85,7 +85,7 @@ def filter_df(participants_file):
     #     (part_df[neo_cols].notna().all(axis=1))
     # ]
 
-    
+
     # Education values should max out at 18. There was a value of 99 in the dataset, so the last complete criteria
     # condition fixes that
     filt_df = part_df[
@@ -98,6 +98,8 @@ def filter_df(participants_file):
     status_counts = filt_df["formal_status"].value_counts()
     valid_statuses = set(status_counts[status_counts >= 5].index)
     filt_df = filt_df[filt_df["formal_status"].isin(valid_statuses)]
+
+    filt_df["formal_status"] = filt_df["formal_status"].str.upper() 
 
     filt_df.drop_duplicates(subset="TDBRAIN_ID", keep="first", inplace=True)
     filt_df = filt_df.set_index("TDBRAIN_ID")
