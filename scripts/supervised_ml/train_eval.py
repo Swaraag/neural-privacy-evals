@@ -1,4 +1,3 @@
-import json
 import time
 import numpy as np
 from pathlib import Path
@@ -19,7 +18,6 @@ XGBC_PARAMS = dict(
     learning_rate=0.05,
     subsample=0.8,
     colsample_bytree=0.8,
-    use_label_encoder=False,
     eval_metric="mlogloss",
     random_state=RANDOM_STATE,
     n_jobs=-1,
@@ -39,7 +37,7 @@ XGBR_PARAMS = dict(
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def evaluate_all_attributes(X, labels_df, target_info, condition_name, output_path):
+def evaluate_all_attributes(X, labels_df, target_info, condition_name):
     """
     Run cross-validated evaluation for all four attributes.
     Returns a full results dict (also written to output_path).
@@ -79,11 +77,6 @@ def evaluate_all_attributes(X, labels_df, target_info, condition_name, output_pa
         print(f"\n[{attr_idx}/{len(target_info)}] {attr_name} ({attr_type})...")
         results[attr_name] = cv_fn(X, labels_df[attr_name].values)
         print_summary(attr_name, results[attr_name])
-
-    # Write output
-    with open(output_path, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"\nResults written to {output_path}")
 
     return results
 
