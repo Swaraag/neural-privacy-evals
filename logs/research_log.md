@@ -7,7 +7,7 @@ There are lots of potential experiments to run from this point on, so I've gener
 
 **TO-DO**
 1. Develop a comparison between LLM performance and a supervised baseline. Split into 3 steps: 
-    1. Train a supervised model on the existing 260 raw features that the model sees and compute a similar set of metrics.
+    1. Train a supervised model on the existing 260 raw features that the model sees, and compute a similar set of metrics.
     2. Train a supervised model on a set of derived features (elaborated on in the next to-do). This gives a theoretical ceiling for how much a machine learning model might expect to be able to extract from a more polished set of features.
     3. Run inference through frontier LLMs using derived features and compare it to the ceiling developed in the previous step. The differential represents how far frontier LLMs are from a reasonably defined ceiling on their potential usefulness for this task.
 2. Build the derived-biomarker feature pipeline. This would involve reducing the current set of ~260 raw features into roughly a dozen much more interpretable features. Much of this work is primarily computational, and works by simply manipulating the raw features in ways to provide a more interpretable set of biomarkers. Thus, this evaluation may make way in the effort to determine whether model capability is currently bottlenecked by any of: domain knowledge (the model's awareness that certain computations would be very beneficial for classification), value retrieval (the ability for the model to retrieve correct channel values for each relevant computation, given a raw text record), or computational ability (the ability for the model to perform such computational steps correctly in practice).
