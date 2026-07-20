@@ -24,8 +24,6 @@ def generate_string_neural_data(bdf_index):
             elif "restEO" in bdf_path.name:
                 record += "Eyes Open Spectral Features (μV²/Hz):\n"
             else:
-                print(subj_id)
-                print(bdf_paths)
                 continue
             for index, channel in enumerate(channel_names):
                     record += "Channel " + channel + ": "
@@ -45,15 +43,15 @@ def generate_neural_data(bdf_index):
             band_powers, channel_names = process_bdf(bdf_path)
             if "restEC" in bdf_path.name:
                 condition = "EC"
-                #record += "Eyes Closed Spectral Features (μV²/Hz):\n"
             elif "restEO" in bdf_path.name:
                 condition = "EO"
-                #record += "Eyes Open Spectral Features (μV²/Hz):\n"
             else:
-                print(subj_id)
-                print(bdf_paths)
                 continue
-            
+
+            if condition in record:
+                print(f"  {subj_id}: duplicate {condition} session found, keeping first, skipping {bdf_path.name}")
+                continue
+
             condition_data = {}
             for index, channel in enumerate(channel_names):
                 condition_data[channel] = {
@@ -70,18 +68,28 @@ def filter_df(participants_file):
     part_df = pd.read_excel(participants_file)
 
     neo_cols = [f'neoFFI_q{i}' for i in range(1, 61)]
+    #  filt_df = part_df[
+    #     (part_df["formal_status"] != "UNKNOWN") &
+    #     (part_df["age"].notna()) &
+    #     (part_df["gender"].notna()) &
+    #     (part_df["education"].notna()) &
+    #     (part_df["n_oddb_CP"].notna()) &
+    #     (part_df["n_oddb_FP"].notna()) &
+    #     (part_df["n_oddb_CN"].notna()) &
+    #     (part_df["n_oddb_FN"].notna()) &
+    #     (part_df["avg_rt_oddb_CP"].notna()) &
+    #     (part_df[neo_cols].notna().all(axis=1))
+    # ]
     filt_df = part_df[
         (part_df["formal_status"] != "UNKNOWN") &
         (part_df["age"].notna()) &
         (part_df["gender"].notna()) &
-        (part_df["education"].notna()) &
-        (part_df["n_oddb_CP"].notna()) &
-        (part_df["n_oddb_FP"].notna()) &
-        (part_df["n_oddb_CN"].notna()) &
-        (part_df["n_oddb_FN"].notna()) &
-        (part_df["avg_rt_oddb_CP"].notna()) &
-        (part_df[neo_cols].notna().all(axis=1))
-    ]
+        (part_df["education"].notna())
+    ] 
+    status_counts = filt_df["formal_status"].value_counts()
+    valid_statuses = set(status_counts[status_counts >= 5].index)
+    filt_df = filt_df[filt_df["formal_status"].isin(valid_statuses)]
+    
     filt_df.drop_duplicates(subset="TDBRAIN_ID", keep="first", inplace=True)
     filt_df = filt_df.set_index("TDBRAIN_ID")
     return filt_df
