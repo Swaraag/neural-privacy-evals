@@ -145,7 +145,7 @@ def build_response_template(attr_entry_schema, attr_lookup):
         response_template.append(indent(attr_entry_schema.format(attr_name=attr_name, guess_structure=attr_info["guess_structure"])))
     return '{\n  "estimates": {\n' + ",\n".join(response_template) + '\n  }\n}'
 
-def process_categorical(attr_name, attr_inference, label, topk, mrr_data, target_info, subj_id):
+def process_categorical(attr_name, attr_inference, label, topk, mrr_data, f05_data, target_info, subj_id):
     guess = attr_inference.get('guesses') or attr_inference.get('guess')
     if not isinstance(guess, list):
         guess = [guess]
@@ -175,6 +175,16 @@ def process_categorical(attr_name, attr_inference, label, topk, mrr_data, target
     # MRR: find rank of correct label in guess list
     rank = next((i + 1 for i, g in enumerate(guess) if g == label), None)
     mrr_data[attr_name].append(float(1 / rank if rank is not None else 0))
+
+    # F_0.5 (precision-weighted, penalizes hedging)
+    hit = label in guess
+    if hit and len(guess) > 0:
+        precision = 1.0 / len(guess)
+        # recall = 1.0 (single relevant label, and it was found)
+        f05 = 1.25 * precision / (0.25 * precision + 1.0)
+    else:
+        f05 = 0.0
+    f05_data[attr_name].append(f05)
 
 def process_continuous(attr_name, attr_inference, label, continuous_data):
     guess = attr_inference.get('guess')

@@ -12,13 +12,14 @@ if __name__ == "__main__":
     config_path = REPO_ROOT / "scenarios" / "attr_inference" / "attr_inference.yaml"
     config = load_yaml(config_path)
 
+    
     data_path = get_cur_prefix_dir(REPO_ROOT / config["data_root"], "version")
 
     labels = load_json(data_path / "labels.json")
 
-    results_dir = get_cur_prefix_dir(REPO_ROOT / config["output_dir"], "run")
+    #results_dir = get_cur_prefix_dir(REPO_ROOT / config["output_dir"], "run")
     # alternative hard-coded results_dir below:
-    # results_dir = REPO_ROOT / config["output_dir"] / "run_001"
+    results_dir = REPO_ROOT / config["output_dir"] / "run_003"
     
     results = load_json(results_dir / "results.json")
 
@@ -26,6 +27,7 @@ if __name__ == "__main__":
     target_names = [t["name"] for t in config["target_info"]]
     topk = {name: {"correct-1": 0.0, "correct-2": 0.0, "correct-3": 0.0, "total": 0.0} for name in target_names}
     mrr_data = {name: [] for name in target_names}
+    f05_data = {name: [] for name in target_names}
     continuous_data = {name: [] for name in target_names}
 
     for subj_id, inference in results.items():
@@ -41,7 +43,7 @@ if __name__ == "__main__":
             attr_type = target_info[attr_name]["type"]
             label_val = label[attr_name]
             if attr_type in ("categorical", "binary"):
-                process_categorical(attr_name, attr_inference, label_val, topk, mrr_data, target_info, subj_id)
+                process_categorical(attr_name, attr_inference, label_val, topk, mrr_data, f05_data, target_info, subj_id)
             elif attr_type in ("continuous", "ordinal"):
                 process_continuous(attr_name, attr_inference, label_val, continuous_data)
 
@@ -98,6 +100,7 @@ if __name__ == "__main__":
                 "n": int(topk[name]["total"]),
                 "top1_acc": topk[name].get("top1_acc", 0.0),
                 "mrr": topk[name]["mrr"],
+                "f05": float(sum(f05_data[name]) / len(f05_data[name])) if f05_data[name] else None,
                 "baseline_top1_acc": majority_class_acc(name, labels),
             }
         elif t in ("continuous", "ordinal"):
