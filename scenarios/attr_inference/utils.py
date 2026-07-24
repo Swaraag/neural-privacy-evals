@@ -39,9 +39,9 @@ def call_api(client, config, system_prompt, user_msg):
     return raw.strip().removeprefix("```json").removesuffix("```").strip()
 
 
-def run_subject(subj_id, record, client, config, prompt_template, attr_lookup, attr_names):
+def run_subject(subj_id, record, client, config, prompt_template, attr_lookup, attr_names, exemplars=None):
     try:
-        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, record, config)
+        system_prompt, user_msg = build_prompt(prompt_template, attr_lookup, attr_names, record, config, exemplars)
         raw = call_api(client, config, system_prompt, user_msg)
         return subj_id, json.loads(raw), None
     except Exception as e:
@@ -111,20 +111,54 @@ def flatten(record):
  
     return "\n".join(lines).strip()
 
-def build_prompt(prompt_template, attr_lookup, attr_names, record, config):
+def format_label_value(attr_name, val):
+    if attr_name == "gender":
+        label = "Male" if int(val) == 1 else "Female"
+        return f"{int(val)} ({label})"
+    if attr_name in ("age", "education"):
+        return str(int(round(float(val))))
+    return str(val)
+
+def build_exemplar_block(exemplars, attr_names, config):
+    k = len(exemplars)
+    parts = []
+    for i, (record, labels) in enumerate(exemplars):
+        lines = [f"--- Exemplar {i + 1} of {k} ---", ""]
+        if config["experiment"]["formatting"] == "flat":
+            lines.append(flatten(record))
+        elif config["experiment"]["formatting"] == "markdown":
+            lines.append(format_spectral_table(record))
+        lines += ["", "Labels:"]
+        for attr_name in attr_names:
+            val = labels.get(attr_name)
+            if val is not None:
+                lines.append(f"  {attr_name}: {format_label_value(attr_name, val)}")
+        lines.append("")
+        parts.append("\n".join(lines))
+    return "\n".join(parts)
+
+def build_prompt(prompt_template, attr_lookup, attr_names, record, config, exemplars=None):
     """Called by run_subject()"""
     user_msg = ""
+    shots = len(exemplars) if exemplars else 0
 
     user_msg += prompt_template["header"].format(attr_labels=", ".join(attr_names))
     user_msg += "\n"
+
+    if shots > 0:
+        user_msg += (
+            f"\nYou will first see {shots} labeled example{'s' if shots != 1 else ''} "
+            f"demonstrating the task. Study each example and its ground-truth labels carefully, "
+            f"then estimate attributes for the target subject at the end.\n\n"
+        )
+        user_msg += build_exemplar_block(exemplars, attr_names, config)
+        user_msg += "--- Target subject (estimate attributes below) ---\n\n"
 
     user_msg += flatten(record) if config["experiment"]["formatting"] == "flat" else format_spectral_table(record) if config["experiment"]["formatting"] == "markdown" else ""
     user_msg += "\n"
 
     response_template = build_response_template(prompt_template["attr_entry_schema"], attr_lookup)
-
     attr_options = build_attr_options(attr_lookup)
-
     user_msg += prompt_template["footer"].format(response_template=response_template, attribute_options=attr_options)
 
     return (prompt_template["system_prompt"], user_msg)

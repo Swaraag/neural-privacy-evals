@@ -17,9 +17,9 @@ if __name__ == "__main__":
 
     labels = load_json(data_path / "labels.json")
 
-    #results_dir = get_cur_prefix_dir(REPO_ROOT / config["output_dir"], "run")
+    results_dir = get_cur_prefix_dir(REPO_ROOT / config["output_dir"], "run")
     # alternative hard-coded results_dir below:
-    results_dir = REPO_ROOT / config["output_dir"] / "run_003"
+    #results_dir = REPO_ROOT / config["output_dir"] / "run_003"
     
     results = load_json(results_dir / "results.json")
 

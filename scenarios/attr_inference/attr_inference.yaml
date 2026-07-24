@@ -6,14 +6,16 @@ experiment:
   feature_representation: "raw" # "raw" | "relative" | "derived" | "derived_norms"
   norms: false                  # published norms provided in prompt
   base_rates: false             # sample base rates provided in prompt
-  shots: 0                      # number of few-shot exemplars
+  shots: 5                      # number of few-shot exemplars (0 = zero-shot)
+  exemplar_pool_size: 50        # subjects reserved as exemplar pool (ignored when shots: 0)
+  exemplar_seed: 42             # fixed seed for reproducible pool partition and per-subject sampling
   show_computation: false       # ask model to show biomarker arithmetic
 
-model: anthropic/claude-haiku-4.5
+model: anthropic/claude-sonnet-4.6
 data_root: "data/01_attr_inference"
 output_dir: "results/01_attr_inference_per_subj"
 prompt_template: "prompts/01_attr_inference_per_subj/prompt.yaml"
-max_subjects: null
+max_subjects: 200
 target_info:
   - name: formal_status
     label: "the subject's clinical diagnosis"
